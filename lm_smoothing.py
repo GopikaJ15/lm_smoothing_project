@@ -1,28 +1,17 @@
 import math
 import re
 from collections import Counter, defaultdict
-
-# -----------------
-# Preprocessing
-# -----------------
 def preprocess(text):
     text = text.lower()
     tokens = re.findall(r'\b[a-z]+\b', text)
     return tokens
 
-# -----------------
-# N-gram Counts
-# -----------------
 def get_unigram_counts(tokens):
     return Counter(tokens)
 
 def get_bigram_counts(tokens):
     bigrams = [(tokens[i], tokens[i+1]) for i in range(len(tokens)-1)]
     return Counter(bigrams)
-
-# -----------------
-# Perplexity
-# -----------------
 def perplexity(model_prob_func, test_data, n=1):
     N = len(test_data) - (n - 1)
     log_prob_sum = 0
@@ -33,10 +22,6 @@ def perplexity(model_prob_func, test_data, n=1):
             prob = 1e-10  # Avoid log(0)
         log_prob_sum += math.log(prob)
     return math.exp(-log_prob_sum / N) if N > 0 else float('inf')
-
-# -----------------
-# Smoothing Methods
-# -----------------
 def no_smoothing_unigram(counts, total):
     def prob(_, word):
         return counts.get(word, 0) / total if total > 0 else 1e-10
@@ -63,7 +48,7 @@ def add_k_bigram(counts, unigram_counts, vocab_size, k=1):
         return (c_bigram + k) / (c_unigram + k * vocab_size)
     return prob
 
-# Good–Turing helper
+
 def good_turing_counts(counts):
     if not counts:
         return {}, 0
@@ -94,7 +79,7 @@ def good_turing_bigram(counts, vocab_size):
         return adjusted.get((w1, word), 0) if (w1, word) in adjusted else p0 / vocab_size
     return prob
 
-# Witten–Bell smoothing
+
 def witten_bell_unigram(counts, total, vocab_size):
     T = len(counts)
     Z = vocab_size - T
@@ -125,9 +110,6 @@ def witten_bell_bigram(counts, unigram_counts, vocab_size):
             return T / (Z * denominator)
     return prob
 
-# -----------------
-# Main
-# -----------------
 if __name__ == "__main__":
     with open("data/custom_corpus.txt", "r", encoding="utf-8") as f:
         text = f.read()
